@@ -1,0 +1,31 @@
+version: '3.4'
+networks:
+  service-dev:
+    driver: bridge 
+
+services:
+  testdb:   
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: test_user
+      MONGO_INITDB_ROOT_PASSWORD: test_user
+      MONGO_INITDB_DATABASE: ShowsDb
+    ports:
+      - 27017:27017
+    volumes:
+            - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - service-dev
+
+  scraperservice:
+    image: ${DOCKER_REGISTRY-}scraperservice
+    depends_on:
+      - testdb
+    build:
+      context: .
+      dockerfile: ScraperService/Dockerfile
+    networks:
+      - service-dev
+volumes:
+  db_volume:
